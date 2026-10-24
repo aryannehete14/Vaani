@@ -22,7 +22,20 @@ async function request(path, { method = 'GET', body, token } = {}) {
   return data;
 }
 
+async function uploadImage(blob) {
+  let res;
+  try {
+    res = await fetch('/api/uploads', { method: 'POST', headers: { 'content-type': blob.type }, body: blob });
+  } catch {
+    throw new Error("Can't reach the Vaani server to upload the photo.");
+  }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error?.message ?? `Upload failed (${res.status})`);
+  return data.url;
+}
+
 export const api = {
+  uploadImage,
   health: () => request('/health'),
   generate: (transcript, engine = 'auto') => request('/generate', { method: 'POST', body: { transcript, engine } }),
   publish: (payload) => request('/stores', { method: 'POST', body: payload }),

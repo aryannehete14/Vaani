@@ -22,7 +22,7 @@ export async function generateStore(transcript, { engine = 'auto', claude = pars
       return { store, engine: 'claude', warnings };
     } catch (err) {
       console.warn('[ai] Claude parse failed, using offline parser:', err.message);
-      notices.push('AI engine unavailable — used the offline parser. Double-check the details below.');
+      notices.push('AI engine unavailable, so we used the offline parser. Double-check the details below.');
     }
   }
   const { store, warnings } = normalizeStore(parseWithRules(transcript));

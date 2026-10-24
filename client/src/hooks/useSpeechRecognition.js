@@ -5,7 +5,7 @@ const Recognition = typeof window !== 'undefined' ? window.SpeechRecognition || 
 const ERRORS = {
   'not-allowed': 'Microphone access was blocked. Allow it in your browser settings, or type instead.',
   'service-not-allowed': 'Speech recognition is turned off in this browser. You can type instead.',
-  'no-speech': "We didn't hear anything — tap the mic and try again.",
+  'no-speech': "We didn't hear anything. Tap the mic and try again.",
   'audio-capture': 'No microphone found. You can type instead.',
   network: 'Speech recognition needs an internet connection. You can type instead.',
 };

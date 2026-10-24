@@ -3,28 +3,27 @@ import { Link } from 'react-router-dom';
 import { Check, Copy, Loader2 } from 'lucide-react';
 
 const VARIANTS = {
-  primary: 'bg-ink text-canvas hover:bg-ink/90 shadow-soft',
-  brand: 'bg-brand text-white hover:brightness-110 shadow-soft',
-  vaani: 'vaani-gradient text-white shadow-lift hover:brightness-110',
-  whatsapp: 'bg-[#1FAF54] text-white hover:bg-[#1A9A49] shadow-soft',
-  secondary: 'bg-surface text-ink border border-line hover:border-ink/25 hover:bg-sunken/60',
-  ghost: 'text-ink hover:bg-ink/5',
-  danger: 'text-red-600 hover:bg-red-500/10 dark:text-red-400',
+  board: 'bg-board text-card border-ink hover:bg-[#145040]',
+  sign: 'bg-sign text-ink border-ink hover:bg-[#F0C252]',
+  paper: 'bg-card text-ink border-ink hover:bg-white',
+  ink: 'bg-ink text-card border-ink hover:bg-[#2B2B26]',
+  wa: 'bg-wa text-white border-ink hover:bg-[#1A6A3B]',
+  ghost: 'bg-transparent text-ink border-transparent hover:bg-ink/5',
 };
 const SIZES = {
-  sm: 'h-9 px-3.5 text-sm gap-1.5 rounded-xl',
-  md: 'h-11 px-5 text-[15px] gap-2 rounded-xl',
-  lg: 'h-13 px-6 text-base gap-2.5 rounded-2xl',
-  icon: 'size-10 rounded-xl',
+  sm: 'h-10 px-3.5 text-sm gap-1.5 border-2 rounded-md',
+  md: 'h-12 px-5 text-[15px] gap-2 border-[3px] rounded-lg',
+  lg: 'h-[60px] px-6 text-xl gap-2.5 border-[3px] rounded-lg font-black [font-stretch:80%] uppercase tracking-wide',
+  icon: 'size-11 border-2 rounded-md',
 };
 
-export const buttonClass = (variant = 'primary', size = 'md', extra = '') =>
-  `inline-flex shrink-0 items-center justify-center font-semibold whitespace-nowrap transition duration-150 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45 ${VARIANTS[variant]} ${SIZES[size]} ${extra}`;
+export const buttonClass = (variant = 'paper', size = 'md', extra = '') =>
+  `inline-flex shrink-0 items-center justify-center font-sign font-extrabold whitespace-nowrap transition duration-150 active:translate-x-[2px] active:translate-y-[2px] disabled:pointer-events-none disabled:opacity-45 ${VARIANTS[variant]} ${SIZES[size]} ${extra}`;
 
 export const Button = forwardRef(function Button({ variant, size, className = '', loading, children, ...props }, ref) {
   return (
     <button ref={ref} type="button" className={buttonClass(variant, size, className)} disabled={loading || props.disabled} {...props}>
-      {loading && <Loader2 className="size-4 animate-spin" aria-hidden />}
+      {loading && <Loader2 className="size-4.5 animate-spin" aria-hidden />}
       {children}
     </button>
   );
@@ -50,7 +49,7 @@ export function Field({ label, hint, children, className = '' }) {
   const id = useId();
   return (
     <div className={className}>
-      <label htmlFor={id} className="mb-1.5 block text-[13px] font-semibold text-ink/80">
+      <label htmlFor={id} className="mb-1.5 block text-[13px] font-bold">
         {label}
       </label>
       {children(id)}
@@ -59,9 +58,9 @@ export function Field({ label, hint, children, className = '' }) {
   );
 }
 
-export function Card({ className = '', children, ...props }) {
+export function SignCard({ className = '', children, ...props }) {
   return (
-    <div className={`rounded-3xl border border-line bg-surface shadow-soft ${className}`} {...props}>
+    <div className={`sign-card ${className}`} {...props}>
       {children}
     </div>
   );
@@ -75,28 +74,31 @@ export function CopyButton({ text, label = 'Copy', className = '' }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
     } catch {
-      // Clipboard can be blocked; the text is still visible to copy manually.
+      // Clipboard can be blocked; the text is still visible to copy by hand.
     }
   };
   return (
-    <Button variant="secondary" size="sm" onClick={copy} className={className} aria-label={`${label}: ${text}`}>
-      {copied ? <Check className="size-4 text-emerald-600" /> : <Copy className="size-4" />}
+    <Button variant="sign" size="sm" onClick={copy} className={className} aria-label={`${label}: ${text}`}>
+      {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
       {copied ? 'Copied' : label}
     </Button>
   );
 }
 
-export function Logo({ className = '' }) {
+export function Logo({ className = '', small = false }) {
   return (
-    <Link to="/" className={`inline-flex items-center gap-2 font-display text-xl font-semibold tracking-tight ${className}`} aria-label="Vaani home">
-      <span className="vaani-gradient grid size-8 place-items-center rounded-[10px] shadow-soft">
-        <svg viewBox="0 0 24 24" className="size-4.5 fill-white" aria-hidden>
-          <rect x="5" y="7" width="2.6" height="10" rx="1.3" />
-          <rect x="10.7" y="4" width="2.6" height="16" rx="1.3" />
-          <rect x="16.4" y="9" width="2.6" height="6" rx="1.3" />
-        </svg>
-      </span>
-      Vaani
+    <Link to="/" className={`inline-flex items-center gap-2.5 no-underline ${className}`} aria-label="Vaani home">
+      <span className={`sign-type text-board ${small ? 'text-[24px]' : 'text-[30px]'}`}>Vaani</span>
+      {!small && (
+        <span className="-rotate-3 rounded-[3px] border-2 border-ink bg-sign px-1.5 py-0.5 text-[10px] font-bold tracking-[0.12em] text-ink">
+          EST. 2026
+        </span>
+      )}
     </Link>
   );
+}
+
+/** A small painted tag, slightly askew. */
+export function Tag({ children, className = '', tilt = '-rotate-1' }) {
+  return <span className={`inline-block rounded-[3px] border-2 border-ink bg-sign px-2.5 py-1 sign-label text-ink ${tilt} ${className}`}>{children}</span>;
 }

@@ -1,9 +1,9 @@
 ---
 doc: prd
-status: draft
+status: approved
 ---
 
-# Vaani — Product Requirements
+# Vaani: Product Requirements
 
 Vaani lets small retail shop owners (bakeries, boutiques, kirana stores) create a working, mobile-first storefront by describing their shop in their own words. No coding, no templates and no forms come first.
 Source: `scope.md > The Unique Kernel`, `scope.md > Who It's For`.
@@ -38,11 +38,11 @@ About 63 million micro, small and medium enterprises operate in India, and most 
 - **Not found.** A friendly 404 with a link back to the builder.
 
 ## Look and Feel
-- **Typography:** a characterful serif display face (Fraunces) for store names and headlines, with a clean geometric sans (Plus Jakarta Sans) for UI.
-- **Colour:** each store gets an AI-picked brand colour that fits its category (warm amber for bakeries, rose for boutiques, green for kirana). Vaani's own UI is a warm off-white with ink-dark text and a violet-to-orange accent gradient. Dark mode follows the OS.
-- **Style:** generous whitespace, rounded-2xl cards, soft shadows, glass blur on sticky bars, and emoji-on-gradient product tiles so every product looks intentional without photos.
-- **Motion:** Framer Motion for pulsing mic rings while listening, staggered card entrance, layout-animated tab underline, a spring-animated cart bar and a toast on success. Respects `prefers-reduced-motion`.
-- **Avoid:** stock-photo clutter, dense admin tables on mobile, and jargon.
+- **Two looks, on purpose.** Vaani's own screens (builder, publish, dashboard) use a **Signboard** style inspired by hand-painted Indian shop signs: bottle green and mustard, tall condensed capitals (Archivo), thick ink borders and hard offset shadows. The stores it generates use a calm **Leaf** style: cream ground, soft colour panels, organic rounded shapes, a serif for headings (Lora) and a friendly sans for text (Nunito Sans).
+- **Store colours:** six Leaf themes (Sage, Clay, Indigo, Marigold, Plum, Teal). The AI pre-selects one from the shop type (Clay for bakeries, Indigo for boutiques, Teal for chemists) and the owner can switch at any time. Every button colour passes WCAG AA with white text.
+- **Product pictures:** outline icons on soft circular tiles (39 icons, picked automatically per product) so every product looks intentional without photos. Owners can swap in a photo URL.
+- **Motion:** Framer Motion for ink rings around the mic while listening, a swinging "now online" signboard, staggered card entrance, layout-animated tab underline, a spring-animated cart bar and a toast on success. Respects `prefers-reduced-motion`.
+- **Avoid:** emoji anywhere, em dashes in copy, generic AI-product tropes (purple gradients, glassmorphism, sparkle icons), stock-photo clutter and jargon.
 
 ## Features and Behavior
 
@@ -68,9 +68,9 @@ Feature: Voice intake
 ```
 
 ### AI store generation
-- `POST /api/generate` turns a transcript into a store config: name, tagline, category, primary colour, contact, address, hours, products (id, name, price, category, description, image emoji) and social links.
+- `POST /api/generate` turns a transcript into a store config: name, tagline, category, colour theme, an optional About text, contact, address, hours, products (id, name, price, category, description, icon) and social links.
 - Two engines sit behind one contract. **Claude** (structured JSON output, schema-validated) runs when `ANTHROPIC_API_KEY` is set. The **rule-based parser** handles regex and keyword extraction with no network. If Claude errors, the request falls back to the rule parser and returns a warning.
-- Every result passes through one normaliser: valid hex colour, positive numeric prices, unique IDs, 24h `HH:MM` hours, and an emoji per product.
+- Every result passes through one normaliser: a valid theme, positive numeric prices, unique IDs, 24h `HH:MM` hours, and a known outline icon per product.
 - Missing information yields sensible defaults plus a `warnings[]` entry (for example "No phone number heard. Add one so customers can WhatsApp you.").
 
 ```gherkin
@@ -121,7 +121,7 @@ Feature: Order via WhatsApp
     Then the cart bar shows "3 items · ₹310"
     When I tap "Order on WhatsApp"
     Then WhatsApp opens addressed to the shop's number
-    And the message lists "2 × Croissants — ₹160" and "1 × Sourdough — ₹150" and "Total: ₹310"
+    And the message lists "2 × Croissants: ₹160" and "1 × Sourdough: ₹150" and "Total: ₹310"
 
 Feature: Business hours status
   Scenario: Shop is open
@@ -143,8 +143,9 @@ Feature: Contact form
 
 ### Owner dashboard
 - Requires the store's edit key, which comes from the browser after publishing or can be pasted.
+- **Photos and logo:** upload product photos and a shop logo from the phone or computer; images are shrunk in the browser before upload.
 - **Products:** add, edit, delete and reorder-free inline editing; **Add by voice** parses a spoken sentence and appends new products, skipping duplicates by name.
-- **Details:** name, tagline, category, brand colour (swatches plus picker), hours, days, phone, WhatsApp, email, address and Instagram.
+- **Details:** name, tagline, About text, category, colour theme (six previews), hours, days, phone, WhatsApp, email, address and Instagram.
 - **Inquiries:** newest first, with a **Mark as done** toggle and a reply-on-WhatsApp shortcut.
 - **Save** writes the changes, and an unsaved-changes indicator shows when there is anything to save.
 
@@ -178,6 +179,7 @@ Feature: Voice product update
 - **Reliability:** runs fully offline from AI services with no API key. A seeded demo store exists on first boot.
 - **Accessibility:** WCAG 2.1 AA contrast, full keyboard navigation, labelled controls, `aria-live` for transcript and status, and reduced-motion support.
 - **Responsive:** mobile-first from 360 px up to 1440 px.
+- **Printable:** the counter card prints on its own as a "Scan to order" poster with a real QR code.
 - **Security:** edit key (192-bit random) compared in constant time; input validated with Zod on every write; request body limit of 100 KB; transcripts capped at 5,000 characters; no secrets in the client.
 - **Portability:** a single `npm install && npm run dev` on Node ≥ 22.13 (built-in SQLite), with no native build tools.
 
@@ -195,7 +197,7 @@ Feature: Voice product update
 ## Product Decisions
 - **WhatsApp instead of payments.** It matches how these shops already take orders, has zero onboarding and needs no KYC.
 - **An edit key instead of accounts.** Signup kills conversion for this persona; the key is invisible when publishing from the same device.
-- **Emoji-on-gradient product tiles instead of stock photos.** Always relevant, zero bandwidth and never a broken image. Owners can paste an image URL.
+- **Outline icon tiles instead of stock photos.** Always relevant, zero bandwidth, never a broken image, and no emoji. Owners can pick another icon or paste a photo URL.
 - **Two parsing engines, one contract.** Judges and owners always get a result, and Claude improves quality when available.
 - *Assumption:* currency defaults to INR (₹) unless the transcript uses `$`, `€` or `£`.
 
@@ -214,11 +216,9 @@ Everything in **Features and Behavior** above: voice and text intake, the dual-e
 
 ## Deferred From the POC
 - **Accounts and multi-store management.** The edit key per store covers the POC; real accounts need auth, recovery and email.
-- **Image upload.** Needs object storage and resizing; emoji tiles and image URLs cover it for now.
 - **Hosted deployment pipeline.** Optional for the hackathon. The app is deploy-ready (`npm run build && npm start` serves everything from one process).
 
 ## Possible Later Enhancements
-- A QR code poster for the shop counter.
 - A regional-language rule parser.
 - Store analytics (views and WhatsApp clicks).
 - A festival-special banner generated by voice.

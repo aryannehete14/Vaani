@@ -1,9 +1,9 @@
 ---
 doc: spec
-status: draft
+status: approved
 ---
 
-# Vaani — Technical Spec
+# Vaani: Technical Spec
 
 ## How This Works, In Plain Language
 Vaani has three pieces:
@@ -22,7 +22,7 @@ PRD ref: `prd.md > The Core Journey`.
 1. The owner taps the mic → `useSpeechRecognition` hook (Web Speech API) streams interim and final text into the `transcript` state → the textarea shows the words live.
 2. The owner taps **Build my store** → the client sends `POST /api/generate { transcript }` → the server route validates length → `generateStore()` in `server/src/ai/pipeline.js`.
 3. The pipeline picks an engine. If `ANTHROPIC_API_KEY` is set, it calls `parseWithClaude()` (Claude structured output against a Zod schema). Otherwise, or on any error, it calls `parseWithRules()`.
-4. The raw result goes to `normalizeStore()`, which applies the theme colour fallback, hex validation, price coercion, unique IDs, hours normalised to `HH:MM`, emoji assignment and the WhatsApp number derived from the phone. It returns `{ store, engine, warnings }`.
+4. The raw result goes to `normalizeStore()`, which applies the category's default theme, price coercion, unique IDs, hours normalised to `HH:MM`, icon assignment and the WhatsApp number derived from the phone. It returns `{ store, engine, warnings }`.
 5. The client puts `store` into the `draft` state → `<ReviewPanel>` (editable) and `<DeviceFrame><Storefront store={draft} preview /></DeviceFrame>` re-render on every change.
 6. **Publish** → `POST /api/stores { store, transcript, engine }` → re-validated by the Zod `StoreSchema` → slug made unique → `editToken` generated → row inserted in SQLite → the client stores `{slug: editToken}` in localStorage and shows the share card.
 7. A customer opens `/s/:slug` → `GET /api/stores/:slug` → `<Storefront>` renders. `getOpenStatus(hours, now)` computes the badge, `useCart` holds the cart, and `buildWhatsAppOrderUrl()` composes the `wa.me` link.
@@ -36,7 +36,7 @@ PRD ref: `prd.md > The Core Journey`.
 | Frontend build | Vite | 6.x | https://vite.dev | Instant dev server, simple production build |
 | UI | React | 18.x | https://react.dev | Component model fits the three screens |
 | Routing | React Router | 6.x | https://reactrouter.com | `/`, `/s/:slug`, `/dashboard/:slug` |
-| Styling | Tailwind CSS | 4.x (`@tailwindcss/vite`) | https://tailwindcss.com | Fast, consistent, responsive utility styling; brand colours via CSS variables |
+| Styling | Tailwind CSS | 4.x (`@tailwindcss/vite`) | https://tailwindcss.com | Fast, consistent, responsive utility styling; store themes via CSS variables and container queries |
 | Motion | Framer Motion | 11.x | https://motion.dev | Mic rings, layout-animated tabs, cart bar springs |
 | Icons | Lucide React | latest | https://lucide.dev | Clean, consistent icon set |
 | API | Express | 4.x | https://expressjs.com | Minimal, well known |
@@ -53,16 +53,17 @@ PRD ref: `prd.md > The Core Journey`.
 - **Production:** `npm run build && npm start`. Express serves the built client and the API on one port (`PORT`, default 8787).
 - **Tests:** `npm test` runs the parser, normaliser, hours logic and API integration tests.
 - **Demo recording:** open `/`, tap the mic (Chrome or Edge), speak the bakery description, publish, open the storefront on a phone-sized window and order on WhatsApp.
+- **Public repository:** https://github.com/keya-05/Vaani (public, MIT License detected by GitHub).
+- **Demo video:** [add the link once uploaded].
 - **Deploy (optional):** any Node host (Render, Railway, Fly.io) with `npm run build` as the build command, `npm start` as the start command, and a persistent disk for `DATA_DIR`.
 
 ## Look and Feel
 PRD ref: `prd.md > Look and Feel`.
-- **Tokens (CSS variables in `client/src/index.css`):** `--bg` warm off-white `#FBF8F3` (dark: `#0E0D0C`), `--ink` `#1C1917`, a Vaani accent gradient from violet `#7C3AED` to orange `#F97316`, and `--brand`, set per store from `primaryColor`.
-- **Type:** Fraunces (display, 600–700) and Plus Jakarta Sans (UI, 400–700), loaded from Google Fonts.
-- **Shape:** `rounded-2xl` cards, `rounded-full` pills, a 1px hairline border at 8% ink, and layered soft shadows.
-- **Density:** spacious on desktop; on mobile, 16px gutters, 44px minimum tap targets and a sticky bottom action bar.
-- **Motion:** 150–300 ms ease-out, springs for the cart and tabs, all gated behind `useReducedMotion()`.
-- **Copy:** second person, short, warm ("Your store is live!").
+- **Signboard (Vaani's screens).** Tokens in `client/src/index.css`: paper `#F4EFE3`, card `#FFFDF7`, ink `#1A1A17`, board green `#0F3B2E`, sign mustard `#E8B53A`, brick `#B5482B`. Archivo at 900 weight and 68% width for sign lettering (`.sign-type`), 3px ink borders (`.sign-card`), hard offset shadows (`.sign-shadow`), IBM Plex Mono for links and keys.
+- **Leaf (generated stores).** Six palettes in `client/src/lib/themes.js`, applied as `--l-*` CSS variables on the storefront root and exposed to Tailwind as `leaf-*` colours. Lora for headings, Nunito Sans for text, 28 to 40px radii, organic curved panels.
+- **Icons.** Lucide outline icons for UI, plus 39 custom outline product icons in `client/src/lib/icons.jsx`. No emoji anywhere.
+- **Copy.** Second person, short, plain. No em dashes.
+- **Motion.** 150 to 300 ms, springs for the cart, tabs and the swinging signboard, all respecting reduced motion.
 
 ## Components
 
@@ -102,7 +103,7 @@ Shared: ui/ (Button, Field, Toast, Badge), lib/ (api, hours, whatsapp, format, s
 - **`ai/claudeParser.js`**: `parseWithClaude(transcript)`.
 - **`ai/ruleParser.js`**: `parseWithRules(transcript)`, deterministic extraction.
 - **`ai/normalize.js`**: `normalizeStore(raw)` → `{ store, warnings }`.
-- **`ai/catalog.js`**: category → colour, tagline and emoji tables shared by both engines.
+- **`ai/catalog.js`**: category to theme, tagline and icon tables shared by both engines.
 - **`ai/pipeline.js`**: `generateStore(transcript, { engine })` → `{ store, engine, warnings }`.
 - **`seed.js`**: demo store "Maya's Bakery" with edit key `demo`.
 
@@ -120,7 +121,8 @@ Shared: ui/ (Button, Field, Toast, Badge), lib/ (api, hours, whatsapp, format, s
   "storeName": "Maya's Bakery",
   "tagline": "Fresh from our oven, every morning",
   "category": "Bakery",
-  "primaryColor": "#D97706",
+  "theme": "clay",
+  "about": "",
   "currency": "INR",
   "contact": { "phone": "+91 98765 43210", "whatsapp": "919876543210", "email": "hello@mayas.in", "address": "MG Road, Pune" },
   "hours": { "open": "09:00", "close": "20:00", "days": "Mon-Sat" },
@@ -131,7 +133,9 @@ Shared: ui/ (Button, Field, Toast, Badge), lib/ (api, hours, whatsapp, format, s
 }
 ```
 - `hours.days` is a human string parsed by `parseDays()`: `Daily`, `Mon-Sat`, `Mon-Fri`, `Mon, Wed, Fri` or `Tue-Sun`.
-- `image` is either an emoji (rendered on a brand-tinted gradient tile) or an `https://` URL (rendered as a photo).
+- `theme` is one of `sage`, `clay`, `indigo`, `marigold`, `plum`, `teal` (palettes in `client/src/lib/themes.js`).
+- `image` is either an outline icon key from `ICON_KEYS` (rendered on a soft round tile) or a photo: an `https://` URL or an uploaded file path `/uploads/<24 hex>.<jpg|png|webp>` (the `PHOTO` pattern in `server/src/ai/schema.js`).
+- `logo` is optional: empty or a photo, shown in the shop header, the dashboard sign and the shop list. Stores saved by older versions are upgraded on read by `upgradeStore()`.
 - `whatsapp` is digits only, with the country code (defaults to `91` for 10-digit Indian numbers).
 
 ### SQLite tables
@@ -181,7 +185,7 @@ paths:
   /api/stores:
     get:
       summary: Recently published stores (public summary, max 12)
-      responses: { '200': { description: '{ stores: [{ slug, storeName, tagline, category, primaryColor, productCount, createdAt }] }' } }
+      responses: { '200': { description: '{ stores: [{ slug, storeName, tagline, category, theme, productCount, preview, createdAt }] }' } }
     post:
       summary: Publish a store
       requestBody: { content: { application/json: { schema: { type: object, required: [store],
@@ -195,9 +199,14 @@ paths:
       summary: Replace store config (owner)
       parameters: [{ in: header, name: x-edit-token, required: true, schema: { type: string } }]
       responses: { '200': { description: '{ slug, store, updatedAt }' }, '401': { description: UNAUTHORIZED } }
+  /api/uploads:
+    post:
+      summary: Upload a product photo or logo (JPEG, PNG or WebP, max 2 MB; format checked from the bytes)
+      requestBody: { content: { image/webp: {}, image/jpeg: {}, image/png: {} } }
+      responses: { '201': { description: '{ url: "/uploads/<id>.<ext>" }' }, '400': { description: BAD_IMAGE }, '413': { description: TOO_LARGE } }
   /api/stores/{slug}/owner:
     get:
-      summary: Owner view — store + engine + inquiry counts (validates the edit key)
+      summary: Owner view, store + engine + inquiry counts (validates the edit key)
       parameters: [{ in: header, name: x-edit-token, required: true, schema: { type: string } }]
       responses: { '200': { description: '{ slug, store, engine, createdAt, updatedAt, inquiries: { total, open } }' }, '401': { description: UNAUTHORIZED } }
   /api/stores/{slug}/inquiries:
@@ -222,7 +231,7 @@ paths:
 ### Claude structured output
 - **Call:** `client.messages.parse({ model: "claude-opus-5-5", max_tokens: 8000, output_config: { effort: "low", format: zodOutputFormat(LlmStoreSchema) }, system, messages: [{ role: "user", content: transcript }] })`.
 - **Contract:** `parsed_output` matches `LlmStoreSchema` (all fields required, empty string when unknown). It is then passed to `normalizeStore()`.
-- **Failure handling:** a missing key, network error, `stop_reason` of `refusal`/`max_tokens`, null `parsed_output`, or a 20 s timeout all fall back to `parseWithRules()`, adding the warning "AI engine unavailable — used offline parser."
+- **Failure handling:** a missing key, network error, `stop_reason` of `refusal`/`max_tokens`, null `parsed_output`, or a 20 s timeout all fall back to `parseWithRules()`, adding the warning "AI engine unavailable, so we used the offline parser."
 - **Cost:** roughly 1.5K input and 0.8K output tokens per store, about $0.02 at Opus 5.5 pricing.
 
 ### WhatsApp deep link
@@ -254,7 +263,7 @@ vaani/
 │   │   ├── routes/stores.js
 │   │   └── ai/
 │   │       ├── schema.js       # Zod StoreSchema + LlmStoreSchema
-│   │       ├── catalog.js      # category themes, emoji map
+│   │       ├── catalog.js      # categories, themes, icon rules
 │   │       ├── ruleParser.js   # offline parser
 │   │       ├── claudeParser.js # Claude structured output
 │   │       ├── normalize.js    # validation + defaults + warnings
@@ -289,7 +298,8 @@ vaani/
 - **Per-store edit key** instead of user accounts. It removes signup friction; full accounts would need auth, email verification and recovery.
 - **One adaptive storefront page** instead of generated HTML/CSS per store. It's consistent quality and an instant preview; per-store code generation would be slower and riskier.
 - **SQLite file** instead of hosted Postgres. Zero setup for judges; the repository layer in `db.js` isolates it for a later swap.
-- **Emoji product tiles** instead of image upload. No storage service needed; the `image` field already accepts URLs.
+- **Uploads on local disk** (`DATA_DIR/uploads`) instead of object storage, with no cleanup of photos that end up unused. A real deployment would use a bucket and a sweep job.
+- **Outline icon tiles** as the default picture, with optional photo upload. No storage service needed; the `image` field already accepts URLs.
 - **Client-side open/closed** status. It uses the visitor's local time, which is correct when the visitor is near the shop (the core case). Store timezones are a later addition.
 
 ## Decisions and Open Issues

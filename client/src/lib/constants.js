@@ -3,20 +3,18 @@ export const CATEGORY_OPTIONS = [
   'Pharmacy', 'Electronics', 'Books & Stationery', 'Salon & Beauty', 'Handicrafts', 'Retail',
 ];
 
-export const BRAND_SWATCHES = ['#B45309', '#92400E', '#BE185D', '#C026D3', '#7C3AED', '#4F46E5', '#2563EB', '#0E7490', '#117F3A', '#4D7C0F', '#DC2626', '#1C1917'];
-
 export const DAY_PRESETS = ['Daily', 'Mon-Sat', 'Mon-Fri', 'Tue-Sun', 'Wed-Mon', 'Sat-Sun'];
 
 export const SPEECH_LANGS = [
   { code: 'en-IN', label: 'English (India)' },
-  { code: 'hi-IN', label: 'हिन्दी' },
+  { code: 'hi-IN', label: 'Hindi' },
   { code: 'en-US', label: 'English (US)' },
 ];
 
 export const SAMPLES = [
   {
     id: 'bakery',
-    emoji: '🥐',
+    icon: 'bread',
     label: 'Bakery',
     text:
       "I run Maya's Bakery on MG Road, Pune. We're open 9 AM to 8 PM, Monday to Saturday. We sell artisanal sourdough for ₹150, " +
@@ -24,7 +22,7 @@ export const SAMPLES = [
   },
   {
     id: 'boutique',
-    emoji: '🥻',
+    icon: 'dress',
     label: 'Boutique',
     text:
       'Welcome to Rangoli Boutique, located at 12 Linking Road, Bandra. We are open 11am to 9pm, closed on Tuesday. ' +
@@ -33,7 +31,7 @@ export const SAMPLES = [
   },
   {
     id: 'kirana',
-    emoji: '🛒',
+    icon: 'basket',
     label: 'Kirana store',
     text:
       'My shop is called Sharma General Store, a kirana store in Sector 15, Noida. Open from 7 to 10 every day. ' +

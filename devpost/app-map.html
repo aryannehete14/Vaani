@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vaani App Map</title>
+<style>
+  :root {
+    --paper: #F4EFE3; --card: #FFFDF7; --ink: #1A1A17; --muted: #55524A;
+    --board: #0F3B2E; --sign: #E8B53A; --brick: #B5482B; --rule: #CFC8B6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 920px; margin: 0 auto; padding: 32px 16px 64px; }
+  .board { background: var(--board); border-radius: 10px; padding: 10px; box-shadow: 8px 8px 0 var(--ink); }
+  .board-inner { border: 2px solid var(--sign); border-radius: 6px; padding: 28px 24px; }
+  .eyebrow { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .18em; color: #E9E3D2; text-transform: uppercase; }
+  h1 { margin: 8px 0 0; color: var(--sign); font: 900 clamp(36px, 7vw, 56px)/0.95 "Arial Narrow", "Roboto Condensed", Impact, system-ui, sans-serif; text-transform: uppercase; letter-spacing: .01em; }
+  .board p.lead { margin: 14px 0 0; color: #E9E3D2; max-width: 46em; }
+  h2 { margin: 44px 0 12px; font: 900 30px/1 "Arial Narrow", "Roboto Condensed", Impact, system-ui, sans-serif; text-transform: uppercase; color: var(--board); }
+  .card { background: var(--card); border: 3px solid var(--ink); border-radius: 8px; padding: 20px; }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .label { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+  code, .path { font-family: ui-monospace, "IBM Plex Mono", Consolas, monospace; font-size: 14px; }
+  .path { display: inline-block; background: #fff; border: 2px solid var(--ink); border-radius: 4px; padding: 1px 6px; overflow-wrap: anywhere; }
+  ol.route { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+  ol.route li { display: grid; grid-template-columns: 56px 1fr; gap: 14px; align-items: start; }
+  .num { font: 900 48px/1 "Arial Narrow", Impact, system-ui, sans-serif; color: var(--brick); text-align: center; }
+  details { margin-top: 10px; }
+  summary { cursor: pointer; font-weight: 700; }
+  summary:focus-visible, a:focus-visible { outline: 3px solid var(--sign); outline-offset: 2px; }
+  pre { margin: 10px 0 0; background: #fff; border: 2px solid var(--ink); border-radius: 6px; padding: 12px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 2px dashed var(--rule); vertical-align: top; }
+  th { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+  .note { background: var(--sign); border: 2px solid var(--ink); border-radius: 6px; padding: 12px 14px; font-weight: 600; }
+  svg text { font-family: system-ui, sans-serif; }
+  .muted { color: var(--muted); }
+  a { color: var(--board); font-weight: 700; }
+</style>
+</head>
+<body>
+<main>
+
+<header class="board">
+  <div class="board-inner">
+    <p class="eyebrow">App map</p>
+    <h1>Vaani</h1>
+    <p class="lead">A shop owner describes their shop out loud. Vaani turns the words into a structured shop, shows it as a live preview, and publishes a page where customers can browse, check if the shop is open, and send an order on WhatsApp.</p>
+  </div>
+</header>
+
+<h2>The main pieces</h2>
+<div class="grid">
+  <section class="card">
+    <p class="label">Web app (React)</p>
+    <p>The screens: builder, live preview, published page, owner dashboard and the customer shop. Lives in <span class="path">client/src</span>.</p>
+  </section>
+  <section class="card">
+    <p class="label">AI engine</p>
+    <p>Turns a transcript into a checked shop. Claude when a key is set, the offline rule parser otherwise. Lives in <span class="path">server/src/ai</span>.</p>
+  </section>
+  <section class="card">
+    <p class="label">Server and database</p>
+    <p>Express API plus a SQLite file that stores shops and customer messages. Lives in <span class="path">server/src</span>, data in <span class="path">server/data/vaani.db</span>.</p>
+  </section>
+</div>
+
+<h2>One action, end to end</h2>
+<p>What happens when the owner presses <strong>Build my shop</strong>:</p>
+<div class="card">
+  <svg viewBox="0 0 860 250" role="img" aria-labelledby="flow-title flow-desc" style="width:100%;height:auto">
+    <title id="flow-title">Build my shop data flow</title>
+    <desc id="flow-desc">The browser sends the transcript to the server. The pipeline tries Claude or the rule parser, then normalizeStore checks the result, which returns to the browser and renders as the Storefront preview. Publishing saves it to SQLite.</desc>
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#1A1A17"/></marker>
+    </defs>
+    <g stroke="#1A1A17" stroke-width="3" fill="#FFFDF7">
+      <rect x="10" y="20" width="190" height="78" rx="6"/>
+      <rect x="250" y="20" width="190" height="78" rx="6"/>
+      <rect x="490" y="20" width="160" height="78" rx="6" fill="#E8B53A"/>
+      <rect x="690" y="20" width="160" height="78" rx="6"/>
+      <rect x="250" y="150" width="190" height="78" rx="6"/>
+      <rect x="490" y="150" width="160" height="78" rx="6"/>
+    </g>
+    <g font-size="14" fill="#1A1A17">
+      <text x="105" y="52" text-anchor="middle" font-weight="800">BuilderPage</text>
+      <text x="105" y="74" text-anchor="middle">generate()</text>
+      <text x="345" y="52" text-anchor="middle" font-weight="800">POST /api/generate</text>
+      <text x="345" y="74" text-anchor="middle">generateStore()</text>
+      <text x="570" y="52" text-anchor="middle" font-weight="800">normalizeStore()</text>
+      <text x="570" y="74" text-anchor="middle">checks everything</text>
+      <text x="770" y="52" text-anchor="middle" font-weight="800">Storefront</text>
+      <text x="770" y="74" text-anchor="middle">live preview</text>
+      <text x="345" y="182" text-anchor="middle" font-weight="800">parseWithClaude()</text>
+      <text x="345" y="204" text-anchor="middle">or parseWithRules()</text>
+      <text x="570" y="182" text-anchor="middle" font-weight="800">SQLite</text>
+      <text x="570" y="204" text-anchor="middle">on Publish</text>
+    </g>
+    <g stroke="#1A1A17" stroke-width="2.5" fill="none" marker-end="url(#arrow)">
+      <path d="M200 59 H244"/>
+      <path d="M345 98 V144"/>
+      <path d="M440 189 C470 189 470 70 484 62"/>
+      <path d="M650 59 H684"/>
+      <path d="M770 98 C770 189 700 189 656 189" stroke-dasharray="6 5"/>
+    </g>
+  </svg>
+</div>
+
+<h2>Follow it in the code</h2>
+<p class="muted">A reference route: open these in your editor and search for the names in bold.</p>
+<ol class="route">
+  <li>
+    <span class="num" aria-hidden="true">1</span>
+    <div class="card">
+      <p class="label">The press</p>
+      <p><span class="path">client/src/pages/BuilderPage.jsx</span> search for <strong><code>const generate</code></strong>. It sends the transcript with <code>api.generate</code> (in <span class="path">client/src/lib/api.js</span>) and puts the returned shop into <code>draft</code>, which the preview reads.</p>
+      <details>
+        <summary>What it looks like</summary>
+<pre><code>const generate = async () =&gt; {
+  setPhase('generating');
+  const [res] = await Promise.all([api.generate(transcript), delay(2400)]);
+  setDraft(res.store);
+  setPhase('review');
+};</code></pre>
+      </details>
+    </div>
+  </li>
+  <li>
+    <span class="num" aria-hidden="true">2</span>
+    <div class="card">
+      <p class="label">The understanding</p>
+      <p><span class="path">server/src/ai/pipeline.js</span> search for <strong><code>generateStore</code></strong>. It tries <code>parseWithClaude</code> (<span class="path">server/src/ai/claudeParser.js</span>) when a key is set, falls back to <code>parseWithRules</code> (<span class="path">server/src/ai/ruleParser.js</span>), and always finishes with <code>normalizeStore</code> (<span class="path">server/src/ai/normalize.js</span>), the single gate that fixes defaults, picks a theme and icons, and writes the warnings the owner sees.</p>
+      <details>
+        <summary>What it looks like</summary>
+<pre><code>if (engine !== 'rules' &amp;&amp; activeEngine() === 'claude') {
+  try {
+    const raw = await claude(transcript);
+    return { ...normalizeStore(raw), engine: 'claude' };
+  } catch (err) { /* fall back to the offline parser */ }
+}
+const { store, warnings } = normalizeStore(parseWithRules(transcript));</code></pre>
+      </details>
+    </div>
+  </li>
+  <li>
+    <span class="num" aria-hidden="true">3</span>
+    <div class="card">
+      <p class="label">The result</p>
+      <p><span class="path">client/src/components/storefront/Storefront.jsx</span> search for <strong><code>export function Storefront</code></strong>. The same component draws the live preview and the public shop page. Its colours come from <code>themeStyle</code> in <span class="path">client/src/lib/themes.js</span>.</p>
+    </div>
+  </li>
+</ol>
+
+<h2>To change this, start here</h2>
+<div class="card">
+  <table>
+    <thead><tr><th scope="col">If you want to change</th><th scope="col">Start in</th></tr></thead>
+    <tbody>
+      <tr><td>The six shop colour themes</td><td><span class="path">client/src/lib/themes.js</span> <code>THEMES</code></td></tr>
+      <tr><td>Which theme, icon and tagline a shop type gets</td><td><span class="path">server/src/ai/catalog.js</span> <code>CATEGORIES</code></td></tr>
+      <tr><td>Product icons, or which product gets which icon</td><td><span class="path">client/src/lib/icons.jsx</span> <code>ICONS</code> and <span class="path">server/src/ai/catalog.js</span> <code>ICON_RULES</code></td></tr>
+      <tr><td>The WhatsApp order message</td><td><span class="path">client/src/lib/whatsapp.js</span> <code>buildOrderMessage</code></td></tr>
+      <tr><td>Open, closing soon and closed logic</td><td><span class="path">client/src/lib/hours.js</span> <code>getOpenStatus</code></td></tr>
+      <tr><td>Signboard colours and fonts</td><td><span class="path">client/src/index.css</span> the <code>@theme</code> block</td></tr>
+      <tr><td>How photo and logo uploads are checked and stored</td><td><span class="path">server/src/routes/uploads.js</span> <code>sniffImage</code> and <span class="path">client/src/lib/image.js</span> <code>resizeImage</code></td></tr>
+      <tr><td>What Claude is told</td><td><span class="path">server/src/ai/claudeParser.js</span> <code>SYSTEM</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>A practice to reuse</h2>
+<div class="card">
+  <p><strong>Put a checked gate and a plain fallback after every AI call, and test the failure on purpose.</strong></p>
+  <p>In Vaani, both engines return to one function, <code>normalizeStore</code>, which validates against <code>StoreSchema</code> (<span class="path">server/src/ai/schema.js</span>). The test <code>pipeline falls back to rules when Claude fails</code> in <span class="path">server/test/ruleParser.test.js</span> hands the pipeline a fake Claude that throws and checks a valid shop still comes back. Another test, <code>generated stores never contain emoji or em dashes</code>, turns a design rule into something the computer checks.</p>
+  <p>On another project with an AI step, the same pattern keeps a bad or missing AI answer from breaking the app: decide the shape you need, check every answer against it, keep a simple non-AI path, and write one test that makes the AI fail.</p>
+</div>
+
+<h2>Run it again</h2>
+<div class="card">
+<pre><code>npm install
+npm run stop      # frees ports 8787 and 5173 if an old run is still going
+npm run dev       # API on :8787, app on http://localhost:5173
+npm test          # 27 tests</code></pre>
+  <p class="muted">Demo shop: <code>/s/mayas-bakery</code>, dashboard key <code>demo</code>. Optional: put <code>ANTHROPIC_API_KEY</code> in <code>.env</code> to use Claude.</p>
+  <p class="note">This map is a snapshot of the code after commit 2a1dc1b plus the redesign, start-up fixes and photo uploads. Code can drift; if a name has moved, search for it.</p>
+</div>
+
+</main>
+</body>
+</html>

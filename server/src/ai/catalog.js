@@ -1,171 +1,167 @@
-// Category themes and emoji vocabulary shared by both parsing engines.
+// Shop categories, storefront themes and the product icon vocabulary shared by both parsing engines.
+
+// Leaf storefront colour themes. The owner can switch between them; the category picks the default.
+export const THEME_IDS = ['sage', 'clay', 'indigo', 'marigold', 'plum', 'teal'];
+
+// Outline icons the storefront knows how to draw (client/src/lib/icons.jsx). Never emoji.
+export const ICON_KEYS = [
+  'package', 'basket', 'bag', 'bread', 'pastry', 'cake', 'cookie', 'cup', 'bottle', 'milk', 'egg', 'sack', 'bowl',
+  'wheat', 'jar', 'leaf', 'sprout', 'apple', 'sweet', 'icecream', 'gift', 'shirt', 'dress', 'shoe', 'gem', 'drop',
+  'tube', 'mirror', 'scissors', 'pill', 'cross', 'therm', 'book', 'pen', 'phone', 'plug', 'headphones', 'flower', 'pot',
+];
 
 export const CATEGORIES = [
   {
     name: 'Bakery',
     keywords: ['bakery', 'bake', 'bread', 'cake', 'pastry', 'patisserie', 'sourdough', 'croissant', 'cookie'],
-    color: '#D97706',
-    taglines: ['Fresh from our oven, every morning', 'Baked with love, served warm'],
+    theme: 'clay',
+    icon: 'bread',
+    taglines: ['Fresh from our oven, every morning', 'Baked with care, served warm'],
   },
   {
     name: 'Cafe',
     keywords: ['cafe', 'café', 'coffee', 'tea house', 'chai', 'espresso', 'brew'],
-    color: '#92400E',
+    theme: 'clay',
+    icon: 'cup',
     taglines: ['Good coffee, better company', 'Your neighbourhood brew stop'],
   },
   {
     name: 'Sweet Shop',
     keywords: ['sweet shop', 'mithai', 'sweets', 'halwai', 'laddoo', 'ladoo', 'barfi', 'jalebi'],
-    color: '#DB2777',
+    theme: 'marigold',
+    icon: 'sweet',
     taglines: ['Traditional sweets, made fresh daily', 'Every celebration starts here'],
   },
   {
     name: 'Restaurant',
     keywords: ['restaurant', 'dhaba', 'kitchen', 'eatery', 'biryani', 'thali', 'tiffin', 'food stall'],
-    color: '#DC2626',
+    theme: 'clay',
+    icon: 'bowl',
     taglines: ['Home-style food, made with care', 'Come hungry, leave happy'],
   },
   {
     name: 'Boutique',
     keywords: ['boutique', 'clothing', 'clothes', 'fashion', 'saree', 'sari', 'kurta', 'kurti', 'dress', 'apparel', 'lehenga', 'garment'],
-    color: '#BE185D',
+    theme: 'indigo',
+    icon: 'dress',
     taglines: ['Handpicked styles for every occasion', 'Wear your story'],
   },
   {
     name: 'Grocery',
     keywords: ['kirana', 'grocery', 'groceries', 'general store', 'provision', 'supermarket', 'atta', 'dal', 'rice', 'staples'],
-    color: '#16A34A',
+    theme: 'sage',
+    icon: 'basket',
     taglines: ['Daily essentials, right around the corner', 'Fresh stock, fair prices, every day'],
   },
   {
     name: 'Fruits & Vegetables',
     keywords: ['fruit', 'vegetable', 'sabzi', 'produce', 'organic farm'],
-    color: '#65A30D',
+    theme: 'sage',
+    icon: 'apple',
     taglines: ['Farm-fresh, picked for you', 'Fresh produce, every morning'],
   },
   {
     name: 'Florist',
     keywords: ['florist', 'flower', 'bouquet', 'garland', 'roses'],
-    color: '#E11D48',
+    theme: 'plum',
+    icon: 'flower',
     taglines: ['Fresh flowers for every moment', 'Say it with flowers'],
   },
   {
     name: 'Pharmacy',
     keywords: ['pharmacy', 'chemist', 'medical store', 'medicine', 'medicines'],
-    color: '#0891B2',
+    theme: 'teal',
+    icon: 'pill',
     taglines: ['Your trusted neighbourhood chemist', 'Health essentials, always in stock'],
   },
   {
     name: 'Electronics',
     keywords: ['electronics', 'mobile shop', 'phone shop', 'gadget', 'charger', 'headphone', 'repair'],
-    color: '#2563EB',
+    theme: 'indigo',
+    icon: 'phone',
     taglines: ['Gadgets, accessories and expert repairs', 'Tech you can trust'],
   },
   {
     name: 'Books & Stationery',
     keywords: ['book', 'bookstore', 'stationery', 'stationary', 'notebook', 'pens'],
-    color: '#4F46E5',
+    theme: 'indigo',
+    icon: 'book',
     taglines: ['Stories and supplies for curious minds', 'Your neighbourhood bookshop'],
   },
   {
     name: 'Salon & Beauty',
-    keywords: ['salon', 'parlour', 'parlor', 'beauty', 'spa', 'haircut', 'cosmetic'],
-    color: '#C026D3',
+    keywords: ['salon', 'parlour', 'parlor', 'beauty', 'spa', 'haircut', 'cosmetic', 'skincare'],
+    theme: 'plum',
+    icon: 'drop',
     taglines: ['Look good, feel great', 'Beauty care you can trust'],
   },
   {
     name: 'Handicrafts',
     keywords: ['handicraft', 'handmade', 'pottery', 'craft', 'artisan', 'handloom'],
-    color: '#B45309',
+    theme: 'clay',
+    icon: 'pot',
     taglines: ['Handmade by local artisans', 'Crafted with heart'],
   },
 ];
 
 export const DEFAULT_CATEGORY = {
   name: 'Retail',
-  color: '#7C3AED',
+  theme: 'sage',
+  icon: 'package',
   taglines: ['Quality products from your neighbourhood store'],
 };
 
 // Ordered most-specific first: the first keyword found in a product name wins.
-const EMOJI_RULES = [
-  [['sourdough', 'bread', 'loaf', 'pav', 'bun'], '🍞'],
-  [['croissant'], '🥐'],
-  [['baguette'], '🥖'],
-  [['cupcake', 'muffin'], '🧁'],
-  [['cake', 'gateau'], '🎂'],
-  [['cookie', 'biscuit'], '🍪'],
-  [['donut', 'doughnut'], '🍩'],
-  [['pie', 'tart'], '🥧'],
-  [['brownie', 'chocolate'], '🍫'],
-  [['pizza'], '🍕'],
-  [['burger'], '🍔'],
-  [['sandwich'], '🥪'],
-  [['biryani', 'rice', 'pulao'], '🍚'],
-  [['noodle', 'maggi'], '🍜'],
-  [['samosa', 'puff'], '🥟'],
-  [['dosa', 'paratha', 'roti', 'naan'], '🥞'],
-  [['curry', 'thali', 'dal'], '🍛'],
-  [['ladoo', 'laddoo', 'barfi', 'mithai', 'sweet', 'jalebi', 'peda'], '🍬'],
-  [['ice cream', 'kulfi'], '🍨'],
-  [['coffee', 'espresso', 'latte', 'cappuccino'], '☕'],
-  [['chai', 'tea'], '🍵'],
-  [['juice', 'smoothie', 'shake', 'lassi'], '🥤'],
-  [['milk', 'curd', 'dahi', 'paneer'], '🥛'],
-  [['egg'], '🥚'],
-  [['cheese'], '🧀'],
-  [['honey'], '🍯'],
-  [['oil', 'ghee'], '🧈'],
-  [['atta', 'flour', 'wheat'], '🌾'],
-  [['sugar', 'salt', 'spice', 'masala'], '🧂'],
-  [['apple'], '🍎'],
-  [['banana'], '🍌'],
-  [['mango'], '🥭'],
-  [['tomato'], '🍅'],
-  [['onion', 'garlic'], '🧅'],
-  [['potato'], '🥔'],
-  [['fruit'], '🍇'],
-  [['vegetable', 'sabzi', 'greens'], '🥬'],
-  [['saree', 'sari', 'lehenga', 'dupatta'], '🥻'],
-  [['kurta', 'kurti', 'shirt', 'top', 't-shirt', 'tshirt'], '👚'],
-  [['dress', 'gown', 'frock'], '👗'],
-  [['jeans', 'trouser', 'pant'], '👖'],
-  [['shoe', 'sandal', 'jutti', 'chappal'], '👟'],
-  [['bag', 'purse', 'clutch'], '👜'],
-  [['scarf', 'stole', 'shawl'], '🧣'],
-  [['earring', 'necklace', 'bangle', 'jewel', 'ring'], '💍'],
-  [['soap', 'shampoo'], '🧴'],
-  [['lipstick', 'makeup', 'cosmetic'], '💄'],
-  [['haircut', 'hair'], '💇'],
-  [['rose', 'bouquet', 'flower', 'garland'], '💐'],
-  [['plant', 'succulent'], '🌱'],
-  [['book', 'novel'], '📚'],
-  [['notebook', 'pen', 'pencil', 'stationery'], '✏️'],
-  [['phone', 'mobile'], '📱'],
-  [['charger', 'cable'], '🔌'],
-  [['headphone', 'earphone', 'earbud'], '🎧'],
-  [['medicine', 'tablet', 'syrup'], '💊'],
-  [['pot', 'vase', 'pottery'], '🏺'],
-  [['candle'], '🕯️'],
-  [['toy'], '🧸'],
+const ICON_RULES = [
+  [['face oil', 'serum', 'cream', 'lotion', 'shampoo', 'soap', 'perfume', 'moisturiser', 'moisturizer'], 'drop'],
+  [['sourdough', 'bread', 'loaf', 'pav', 'bun', 'baguette', 'focaccia'], 'bread'],
+  [['croissant', 'pastry', 'puff', 'danish', 'roll', 'pie', 'tart'], 'pastry'],
+  [['cupcake', 'muffin', 'cake', 'gateau', 'brownie'], 'cake'],
+  [['cookie', 'biscuit'], 'cookie'],
+  [['ice cream', 'kulfi', 'gelato'], 'icecream'],
+  [['ladoo', 'laddoo', 'barfi', 'mithai', 'sweet', 'jalebi', 'peda', 'katli', 'halwa', 'chocolate', 'candy'], 'sweet'],
+  [['coffee', 'espresso', 'latte', 'cappuccino', 'chai', 'tea'], 'cup'],
+  [['milk', 'curd', 'dahi', 'paneer', 'butter', 'cheese'], 'milk'],
+  [['egg'], 'egg'],
+  [['juice', 'smoothie', 'shake', 'lassi', 'soda', 'water', 'oil', 'ghee'], 'bottle'],
+  [['rice', 'basmati', 'poha', 'oats', 'grain', 'sugar'], 'sack'],
+  [['atta', 'flour', 'wheat', 'maida', 'besan'], 'wheat'],
+  [['dal', 'lentil', 'curry', 'thali', 'biryani', 'soup', 'noodle', 'maggi'], 'bowl'],
+  [['salt', 'jam', 'pickle', 'achar', 'honey', 'jar', 'dry fruit', 'nuts', 'almond', 'cashew'], 'jar'],
+  [['spice', 'masala', 'turmeric', 'haldi', 'jeera', 'chilli', 'pepper', 'herb', 'mint', 'coriander', 'plant', 'sapling', 'succulent'], 'sprout'],
+  [['apple', 'mango', 'banana', 'fruit', 'orange', 'grape', 'papaya'], 'apple'],
+  [['vegetable', 'sabzi', 'greens', 'tomato', 'onion', 'potato', 'spinach', 'leaf'], 'leaf'],
+  [['gift', 'hamper', 'box'], 'gift'],
+  [['saree', 'sari', 'lehenga', 'dress', 'gown', 'frock', 'dupatta', 'scarf', 'stole', 'shawl'], 'dress'],
+  [['shirt', 'top', 't-shirt', 'tshirt', 'kurta', 'kurti', 'jeans', 'trouser', 'pant', 'jacket'], 'shirt'],
+  [['shoe', 'sandal', 'jutti', 'chappal', 'sneaker'], 'shoe'],
+  [['bag', 'purse', 'clutch', 'tote', 'wallet'], 'bag'],
+  [['earring', 'jhumka', 'necklace', 'bangle', 'jewel', 'ring', 'bracelet'], 'gem'],
+  [['lipstick', 'lip', 'kajal', 'makeup', 'cosmetic'], 'tube'],
+  [['mirror', 'comb'], 'mirror'],
+  [['haircut', 'hair', 'trim', 'facial', 'scissor'], 'scissors'],
+  [['first aid', 'bandage', 'plaster'], 'cross'],
+  [['thermometer', 'bp monitor', 'oximeter'], 'therm'],
+  [['medicine', 'tablet', 'capsule', 'vitamin', 'syrup', 'pill'], 'pill'],
+  [['book', 'novel', 'notebook', 'diary'], 'book'],
+  [['pen', 'pencil', 'stationery', 'marker'], 'pen'],
+  [['charger', 'cable', 'adapter', 'plug'], 'plug'],
+  [['headphone', 'earphone', 'earbud', 'speaker'], 'headphones'],
+  [['phone', 'mobile'], 'phone'],
+  [['rose', 'bouquet', 'flower', 'garland'], 'flower'],
+  [['pot', 'vase', 'pottery', 'diya'], 'pot'],
 ];
-
-const CATEGORY_EMOJI = {
-  Bakery: '🥐', Cafe: '☕', 'Sweet Shop': '🍬', Restaurant: '🍛', Boutique: '👗',
-  Grocery: '🛒', 'Fruits & Vegetables': '🥬', Florist: '💐', Pharmacy: '💊',
-  Electronics: '📱', 'Books & Stationery': '📚', 'Salon & Beauty': '💄', Handicrafts: '🏺',
-};
 
 // Product-level grouping used for storefront filter chips.
 const PRODUCT_GROUPS = [
-  [['bread', 'sourdough', 'loaf', 'baguette', 'bun', 'pav'], 'Breads'],
+  [['bread', 'sourdough', 'loaf', 'baguette', 'bun', 'pav', 'focaccia'], 'Breads'],
   [['croissant', 'pastry', 'puff', 'danish', 'tart', 'pie', 'roll'], 'Pastries'],
   [['cake', 'cupcake', 'muffin', 'brownie', 'cookie', 'donut'], 'Cakes & Treats'],
   [['coffee', 'espresso', 'latte', 'cappuccino', 'tea', 'chai', 'juice', 'shake', 'lassi', 'smoothie'], 'Beverages'],
-  [['ladoo', 'laddoo', 'barfi', 'jalebi', 'peda', 'mithai', 'halwa'], 'Sweets'],
+  [['ladoo', 'laddoo', 'barfi', 'jalebi', 'peda', 'mithai', 'halwa', 'katli'], 'Sweets'],
   [['saree', 'sari', 'lehenga', 'kurta', 'kurti', 'dress', 'gown', 'shirt', 'top', 'jeans', 'dupatta'], 'Clothing'],
-  [['earring', 'necklace', 'bangle', 'bag', 'purse', 'scarf', 'stole', 'jewel'], 'Accessories'],
-  [['atta', 'flour', 'rice', 'dal', 'sugar', 'salt', 'oil', 'ghee', 'masala', 'spice'], 'Staples'],
+  [['earring', 'jhumka', 'necklace', 'bangle', 'bag', 'purse', 'scarf', 'stole', 'jewel', 'tote'], 'Accessories'],
+  [['atta', 'flour', 'rice', 'dal', 'sugar', 'salt', 'oil', 'ghee', 'masala', 'spice', 'turmeric', 'jeera'], 'Staples'],
   [['milk', 'curd', 'dahi', 'paneer', 'butter', 'cheese', 'egg'], 'Dairy & Eggs'],
   [['apple', 'banana', 'mango', 'fruit', 'tomato', 'onion', 'potato', 'vegetable', 'sabzi'], 'Fresh Produce'],
   [['biscuit', 'chips', 'namkeen', 'maggi', 'noodle', 'snack'], 'Snacks'],
@@ -210,11 +206,11 @@ export function themeFor(categoryName) {
   return CATEGORIES.find((c) => c.name.toLowerCase() === String(categoryName).toLowerCase()) ?? DEFAULT_CATEGORY;
 }
 
-export function emojiFor(productName, storeCategory) {
-  for (const [words, emoji] of EMOJI_RULES) {
-    if (words.some((w) => includesWord(productName, w))) return emoji;
+export function iconFor(productName, storeCategory) {
+  for (const [words, icon] of ICON_RULES) {
+    if (words.some((w) => includesWord(productName, w))) return icon;
   }
-  return CATEGORY_EMOJI[storeCategory] ?? '🛍️';
+  return themeFor(storeCategory).icon;
 }
 
 export function productGroupFor(productName, storeCategory) {

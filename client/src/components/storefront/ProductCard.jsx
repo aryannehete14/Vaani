@@ -1,94 +1,110 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { Minus, Plus, MessageCircle } from 'lucide-react';
-import { formatPrice, isImageUrl } from '../../lib/format.js';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Minus, Plus } from 'lucide-react';
+import { formatPrice } from '../../lib/format.js';
+import { ProductVisual } from '../../lib/icons.jsx';
 import { buildProductInquiryUrl } from '../../lib/whatsapp.js';
+import { WhatsAppIcon } from './WhatsAppIcon.jsx';
 
-export function ProductVisual({ product, className = '' }) {
-  if (isImageUrl(product.image)) {
-    return <img src={product.image} alt="" loading="lazy" className={`size-full object-cover ${className}`} />;
-  }
+const unitOf = (p) => p.description.match(/Priced per (\w+)/)?.[1];
+
+function Price({ product, currency }) {
+  if (!(product.price > 0)) return <span className="font-extrabold">Ask for price</span>;
+  const unit = unitOf(product);
   return (
-    <div
-      className={`@container grid size-full place-items-center bg-[radial-gradient(circle_at_30%_25%,color-mix(in_oklab,var(--brand)_22%,transparent),transparent_65%),linear-gradient(160deg,color-mix(in_oklab,var(--brand)_14%,var(--surface)),color-mix(in_oklab,var(--brand)_4%,var(--surface)))] ${className}`}
-    >
-      <span className="text-[clamp(2.75rem,12cqi,4.5rem)] drop-shadow-[0_8px_16px_rgb(0_0_0/0.12)] transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6" aria-hidden>
-        {product.image || '🛍️'}
-      </span>
+    <span className="font-extrabold tabular-nums">
+      {formatPrice(product.price, currency)}
+      {unit && <span className="text-xs font-semibold text-leaf-muted">/{unit}</span>}
+    </span>
+  );
+}
+
+/** Round add button that turns into a quantity stepper once something is in the cart. */
+export function Stepper({ qty, onAdd, onRemove, name, outline = false }) {
+  return (
+    <AnimatePresence mode="popLayout" initial={false}>
+      {qty === 0 ? (
+        <motion.button
+          key="add"
+          type="button"
+          initial={{ scale: 0.7, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.7, opacity: 0 }}
+          onClick={onAdd}
+          className={`grid size-11 shrink-0 place-items-center rounded-full transition active:scale-90 ${
+            outline ? 'border-[1.5px] border-leaf-deep bg-white text-leaf-deep hover:bg-leaf-deep hover:text-white' : 'bg-leaf-brand text-white hover:brightness-110'
+          }`}
+          aria-label={`Add ${name}`}
+        >
+          <Plus className="size-4.5" strokeWidth={2.2} />
+        </motion.button>
+      ) : (
+        <motion.div
+          key="stepper"
+          initial={{ scale: 0.7, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.7, opacity: 0 }}
+          className="flex h-11 shrink-0 items-center rounded-full bg-leaf-brand text-white"
+        >
+          <button type="button" onClick={onRemove} className="grid size-11 place-items-center rounded-full hover:bg-white/15 active:scale-90" aria-label={`Remove one ${name}`}>
+            <Minus className="size-4" strokeWidth={2.2} />
+          </button>
+          <motion.span key={qty} initial={{ y: -6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="min-w-4 text-center font-extrabold tabular-nums" aria-live="polite">
+            {qty}
+          </motion.span>
+          <button type="button" onClick={onAdd} className="grid size-11 place-items-center rounded-full hover:bg-white/15 active:scale-90" aria-label={`Add one more ${name}`}>
+            <Plus className="size-4" strokeWidth={2.2} />
+          </button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/** Round tile used in the Bestsellers band. */
+export function BestsellerTile({ product, store, cart }) {
+  return (
+    <div className="flex flex-col rounded-[28px] bg-white p-5 text-center">
+      <ProductVisual product={product} className="mx-auto size-28 rounded-full" />
+      <p className="mt-4 font-extrabold leading-snug">{product.name}</p>
+      <p className="mt-0.5 line-clamp-1 text-[13px] text-leaf-muted">{product.category}</p>
+      <div className="mt-auto flex items-center justify-between gap-2 pt-4 text-left">
+        <Price product={product} currency={store.currency} />
+        <Stepper qty={cart.qty(product.id)} onAdd={() => cart.add(product.id)} onRemove={() => cart.remove(product.id)} name={product.name} />
+      </div>
     </div>
   );
 }
 
-export function ProductCard({ product, store, qty, onAdd, onRemove }) {
-  const canWhatsApp = Boolean(store.contact.whatsapp);
+/** Horizontal card used in the full catalogue. */
+export function ProductRow({ product, store, cart }) {
   return (
     <motion.article
       layout
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.96 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="group flex flex-col overflow-hidden rounded-3xl border border-line bg-surface shadow-soft transition-shadow duration-300 hover:shadow-lift"
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.22 }}
+      className="group flex items-center gap-4 rounded-[28px] bg-white p-3.5 pr-4"
     >
-      <div className="relative aspect-[4/3] overflow-hidden">
-        <ProductVisual product={product} />
-        <span className="absolute left-3 top-3 rounded-full bg-surface/85 px-2.5 py-1 text-[11px] font-semibold text-ink/75 backdrop-blur">
-          {product.category}
-        </span>
-        {canWhatsApp && (
-          <a
-            href={buildProductInquiryUrl(store, product)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="absolute right-3 top-3 grid size-8 place-items-center rounded-full bg-surface/85 text-ink/70 opacity-100 backdrop-blur transition hover:text-[#1FAF54] @md:opacity-0 @md:group-hover:opacity-100 @md:focus:opacity-100"
-            aria-label={`Ask about ${product.name} on WhatsApp`}
-            title="Ask on WhatsApp"
-          >
-            <MessageCircle className="size-4" />
-          </a>
-        )}
-      </div>
-
-      <div className="flex flex-1 flex-col gap-1.5 p-4">
-        <h3 className="font-display text-[17px] font-semibold leading-snug tracking-tight">{product.name}</h3>
-        {product.description && <p className="line-clamp-2 text-[13px] leading-relaxed text-muted">{product.description}</p>}
-        <div className="mt-auto flex items-center justify-between gap-2 pt-3">
-          <span className="text-[17px] font-bold tracking-tight">{product.price > 0 ? formatPrice(product.price, store.currency) : 'Ask for price'}</span>
-          <AnimatePresence mode="popLayout" initial={false}>
-            {qty === 0 ? (
-              <motion.button
-                key="add"
-                type="button"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                onClick={onAdd}
-                className="inline-flex h-9 items-center gap-1 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-soft transition hover:brightness-110 active:scale-95"
-                aria-label={`Add ${product.name} to order`}
-              >
-                <Plus className="size-4" /> Add
-              </motion.button>
-            ) : (
-              <motion.div
-                key="stepper"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="inline-flex h-9 items-center rounded-full bg-brand text-white shadow-soft"
-              >
-                <button type="button" onClick={onRemove} className="grid size-9 place-items-center rounded-full transition hover:bg-white/15 active:scale-90" aria-label={`Remove one ${product.name}`}>
-                  <Minus className="size-4" />
-                </button>
-                <motion.span key={qty} initial={{ y: -6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="min-w-5 text-center text-sm font-bold tabular-nums" aria-live="polite">
-                  {qty}
-                </motion.span>
-                <button type="button" onClick={onAdd} className="grid size-9 place-items-center rounded-full transition hover:bg-white/15 active:scale-90" aria-label={`Add one more ${product.name}`}>
-                  <Plus className="size-4" />
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+      <ProductVisual product={product} className="size-20 shrink-0 rounded-[22px] @md:size-24" />
+      <div className="min-w-0 flex-1">
+        <h3 className="font-extrabold leading-snug">{product.name}</h3>
+        {product.description && <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-leaf-muted">{product.description}</p>}
+        <div className="mt-1.5 flex items-center gap-3">
+          <Price product={product} currency={store.currency} />
+          {store.contact.whatsapp && (
+            <a
+              href={buildProductInquiryUrl(store, product)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-bold text-leaf-muted underline-offset-2 hover:text-leaf-deep hover:underline"
+            >
+              <WhatsAppIcon className="size-3.5" /> Ask
+            </a>
+          )}
         </div>
       </div>
+      <Stepper qty={cart.qty(product.id)} onAdd={() => cart.add(product.id)} onRemove={() => cart.remove(product.id)} name={product.name} outline />
     </motion.article>
   );
 }

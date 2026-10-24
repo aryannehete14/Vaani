@@ -3,5 +3,11 @@ dist/
 .env
 server/data/*.db
 server/data/*.db-*
+server/data/uploads/
 .DS_Store
 *.log
+
+# Devpost Learn: private learner context, never commit
+devpost/learner-profile.md
+.env.*
+!.env.example

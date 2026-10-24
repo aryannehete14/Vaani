@@ -1,56 +1,50 @@
 @import "tailwindcss";
 
+/* Two visual systems:
+   Signboard: Vaani's own screens (builder, publish, dashboard). Hand-painted shop sign.
+   Leaf: the storefronts Vaani generates. Six colour themes set via --l-* variables. */
+
 @theme {
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Fraunces", ui-serif, Georgia, serif;
-  --shadow-soft: 0 1px 2px rgb(28 25 23 / 0.04), 0 8px 24px -8px rgb(28 25 23 / 0.10);
-  --shadow-lift: 0 2px 4px rgb(28 25 23 / 0.05), 0 24px 48px -16px rgb(28 25 23 / 0.22);
+  --font-sign: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Lora", ui-serif, Georgia, serif;
+  --font-leaf: "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-paper: #f4efe3;
+  --color-card: #fffdf7;
+  --color-ink: #1a1a17;
+  --color-muted: #55524a;
+  --color-rule: #cfc8b6;
+  --color-board: #0f3b2e;
+  --color-sign: #e8b53a;
+  --color-brick: #b5482b;
+  --color-wa: #1f7a44;
 }
 
-/* Semantic colour tokens — switch with the OS colour scheme. */
 @theme inline {
-  --color-canvas: var(--canvas);
-  --color-surface: var(--surface);
-  --color-sunken: var(--sunken);
-  --color-ink: var(--ink);
-  --color-muted: var(--muted);
-  --color-line: var(--line);
-  --color-brand: var(--brand);
-  --color-brand-fg: var(--brand-fg);
+  --color-leaf-ground: var(--l-ground);
+  --color-leaf-panel: var(--l-panel);
+  --color-leaf-tile: var(--l-tile);
+  --color-leaf-brand: var(--l-brand);
+  --color-leaf-deep: var(--l-deep);
+  --color-leaf-muted: var(--l-muted);
+  --color-leaf-action: var(--l-action);
+  --color-leaf-line: var(--l-line);
 }
 
 :root {
-  --canvas: #fbf8f3;
-  --surface: #ffffff;
-  --sunken: #f4efe7;
-  --ink: #1c1917;
-  --muted: #6b635a;
-  --line: rgb(28 25 23 / 0.09);
-  --brand: #7c3aed;
-  --brand-fg: var(--brand);
   color-scheme: light;
+  --l-ground: #f4f1ea;
+  --l-panel: #dce3d6;
+  --l-tile: #e3e9df;
+  --l-brand: #5f7a64;
+  --l-deep: #24392c;
+  --l-muted: #4e5f53;
+  --l-action: #b9521c;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --canvas: #0e0d0c;
-    --surface: #181614;
-    --sunken: #221f1c;
-    --ink: #f5f1ea;
-    --muted: #a8a097;
-    --line: rgb(245 241 234 / 0.1);
-    color-scheme: dark;
-  }
-}
-
-/* Any element that sets --brand inline also gets a readable foreground variant. */
-.brand-scope {
-  --brand-fg: var(--brand);
-}
-@media (prefers-color-scheme: dark) {
-  .brand-scope {
-    --brand-fg: color-mix(in oklab, var(--brand) 55%, white);
-  }
+.leaf {
+  --l-line: color-mix(in oklab, var(--l-deep) 14%, transparent);
 }
 
 html {
@@ -59,31 +53,57 @@ html {
 }
 
 body {
-  background: var(--canvas);
-  color: var(--ink);
-  font-family: var(--font-sans);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sign);
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
 
 :focus-visible {
-  outline: 2px solid var(--brand-fg);
+  outline: 3px solid var(--color-sign);
   outline-offset: 2px;
-  border-radius: 6px;
+}
+.leaf :focus-visible {
+  outline-color: var(--l-action);
 }
 
 ::selection {
-  background: color-mix(in oklab, var(--brand) 25%, transparent);
+  background: var(--color-sign);
+  color: var(--color-ink);
 }
 
-.vaani-gradient {
-  background-image: linear-gradient(135deg, #7c3aed 0%, #db2777 55%, #f97316 100%);
-}
-.vaani-text {
-  background-image: linear-gradient(120deg, #7c3aed 0%, #db2777 50%, #f97316 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+@layer components {
+  /* Tall condensed sign lettering. */
+  .sign-type {
+    font-family: var(--font-sign);
+    font-weight: 900;
+    font-stretch: 68%;
+    text-transform: uppercase;
+    line-height: 0.92;
+    letter-spacing: 0.005em;
+  }
+  .sign-label {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .sign-card {
+    background: var(--color-card);
+    border: 3px solid var(--color-ink);
+    border-radius: 8px;
+  }
+  .sign-shadow {
+    box-shadow: 6px 6px 0 var(--color-ink);
+  }
+  .sign-input {
+    @apply w-full rounded-md border-2 border-ink bg-white px-3.5 py-2.5 font-sign text-[15px] text-ink placeholder:text-muted/70
+      focus:outline-none focus:ring-4 focus:ring-sign/60;
+  }
+  .leaf-input {
+    @apply w-full rounded-2xl border border-leaf-line bg-white px-4 py-3 font-leaf text-[15px] text-leaf-deep placeholder:text-leaf-muted/70
+      focus:border-leaf-brand focus:outline-none focus:ring-4 focus:ring-leaf-brand/20;
+  }
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -93,11 +113,21 @@ body {
   scrollbar-width: none;
 }
 
-@layer components {
-.field {
-  @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[15px] text-ink placeholder:text-muted/70 transition
-    hover:border-ink/20 focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15;
-}
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible !important;
+  }
+  .print-area {
+    position: fixed !important;
+    inset: 0 !important;
+    transform: none !important;
+    margin: auto !important;
+    box-shadow: none !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

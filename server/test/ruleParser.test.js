@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseWithRules } from '../src/ai/ruleParser.js';
 import { generateStore } from '../src/ai/pipeline.js';
-import { normalizeStore, ensureContrast, toWhatsApp } from '../src/ai/normalize.js';
+import { normalizeStore, toWhatsApp, upgradeStore } from '../src/ai/normalize.js';
 import { normalizeDays, normalizeTime } from '../src/ai/hours.js';
 import { StoreSchema } from '../src/ai/schema.js';
 
@@ -105,30 +105,37 @@ test('normaliser repairs LLM-style output', () => {
   const { store } = normalizeStore({
     storeName: 'green leaf grocers',
     category: 'grocery',
-    primaryColor: '#FFFF00', // too light for white text
+    theme: 'not-a-theme',
     contact: { phone: '098111 22233', whatsapp: '', email: 'not-an-email', address: '' },
     hours: { open: '7 am', close: '10 PM', days: 'all days' },
     products: [
-      { name: 'Tomatoes', price: '₹40', category: '', description: '', image: 'tomato' },
+      { name: 'Tomatoes', price: '₹40', category: '', description: '', image: 'not-an-icon' },
       { name: 'tomatoes', price: 45 }, // duplicate
       { name: 'Paneer', price: 90, image: 'https://example.com/paneer.jpg' },
     ],
   });
   assert.equal(store.storeName, 'Green Leaf Grocers');
   assert.equal(store.category, 'Grocery');
-  assert.notEqual(store.primaryColor, '#FFFF00');
+  assert.equal(store.theme, 'sage', 'unknown theme falls back to the category default');
   assert.equal(store.contact.whatsapp, '919811122233');
   assert.equal(store.contact.email, '');
   assert.deepEqual(store.hours, { open: '07:00', close: '22:00', days: 'Daily' });
   assert.equal(store.products.length, 2);
   assert.equal(store.products[0].price, 40);
-  assert.equal(store.products[0].image, '🍅');
+  assert.equal(store.products[0].image, 'leaf');
   assert.equal(store.products[1].image, 'https://example.com/paneer.jpg');
 });
 
-test('ensureContrast reaches 4.5:1 against white; toWhatsApp formats Indian numbers', () => {
-  assert.equal(ensureContrast('#1C1917'), '#1C1917');
-  assert.notEqual(ensureContrast('#FDE047'), '#FDE047');
+test('themes and icons: category defaults, legacy upgrade, toWhatsApp', () => {
+  assert.equal(normalizeStore({ storeName: 'X', category: 'Pharmacy' }).store.theme, 'teal');
+  assert.equal(normalizeStore({ storeName: 'X', category: 'Boutique', theme: 'marigold' }).store.theme, 'marigold');
+  const legacy = upgradeStore({
+    storeName: 'Old Shop', category: 'Bakery', primaryColor: '#B45309',
+    contact: {}, hours: { open: '09:00', close: '20:00', days: 'Daily' },
+    products: [{ id: 'p_bread', name: 'Bread', price: 40, category: 'Breads', description: 'x', image: '\u{1F35E}' }],
+  });
+  assert.equal(legacy.theme, 'clay');
+  assert.equal(legacy.products[0].image, 'bread');
   assert.equal(toWhatsApp('98765 43210'), '919876543210');
   assert.equal(toWhatsApp('+1 415 555 0100'), '14155550100');
   assert.equal(toWhatsApp('123'), '');
@@ -153,5 +160,15 @@ test('pipeline falls back to rules when Claude fails', async () => {
   } finally {
     if (prev === undefined) delete process.env.ANTHROPIC_API_KEY;
     else process.env.ANTHROPIC_API_KEY = prev;
+  }
+});
+
+test('generated stores never contain emoji or em dashes', async () => {
+  for (const t of [BAKERY, KIRANA, BOUTIQUE, 'hello there my shop sells things']) {
+    const { store, warnings } = await generateStore(t, { engine: 'rules' });
+    const text = JSON.stringify({ store, warnings });
+    assert.ok(!/\p{Extended_Pictographic}/u.test(text), `emoji found in: ${text.slice(0, 80)}`);
+    assert.ok(!text.includes('—'), 'em dash found');
+    for (const p of store.products) assert.match(p.image, /^[a-z]+$/);
   }
 });

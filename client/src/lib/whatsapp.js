@@ -12,9 +12,9 @@ export const shareLink = (text) => `https://wa.me/?text=${encodeURIComponent(tex
 export function buildOrderMessage(store, lines) {
   const cur = store.currency;
   const total = lines.reduce((sum, l) => sum + l.product.price * l.qty, 0);
-  const items = lines.map((l) => `• ${l.qty} × ${l.product.name} — ${formatPrice(l.product.price * l.qty, cur)}`);
+  const items = lines.map((l) => `• ${l.qty} × ${l.product.name}: ${formatPrice(l.product.price * l.qty, cur)}`);
   return [
-    `Hi ${store.storeName}! 👋 I'd like to order:`,
+    `Hi ${store.storeName}, I'd like to order:`,
     '',
     ...items,
     '',
@@ -23,7 +23,7 @@ export function buildOrderMessage(store, lines) {
     'Name: ',
     'Pickup or delivery: ',
     '',
-    '(Sent from your Vaani storefront)',
+    '(Sent from your Vaani shop page)',
   ].join('\n');
 }
 

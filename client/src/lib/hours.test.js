@@ -68,8 +68,8 @@ test('WhatsApp order message', () => {
     { product: { name: 'Croissants', price: 80 }, qty: 2 },
     { product: { name: 'Sourdough', price: 150 }, qty: 1 },
   ]);
-  assert.match(msg, /2 × Croissants — ₹160/);
-  assert.match(msg, /1 × Sourdough — ₹150/);
+  assert.match(msg, /2 × Croissants: ₹160/);
+  assert.match(msg, /1 × Sourdough: ₹150/);
   assert.match(msg, /Total: ₹310/);
   assert.equal(waLink('+91 98765 43210', 'hi'), 'https://wa.me/919876543210?text=hi');
 });

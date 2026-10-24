@@ -68,7 +68,7 @@ function extractName(text) {
     const m = text.match(re);
     if (!m) continue;
     let name = m[1].trim().replace(/^(?:my|our)\s+/i, '');
-    // "I run a small bakery" describes, it doesn't name — skip generic descriptions.
+    // "I run a small bakery" describes, it doesn't name: skip generic descriptions.
     if (/^(?:a|an|the)\s/i.test(name) || /^(?:small|little|local|family)\b/i.test(name)) continue;
     if (name.split(/\s+/).length > 6) continue;
     return titleCase(name);

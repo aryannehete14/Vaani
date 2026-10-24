@@ -1,5 +1,8 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { openDb } from '../src/db.js';
 import { createApp } from '../src/app.js';
 import { seedDemo, DEMO_SLUG, DEMO_EDIT_KEY } from '../src/seed.js';
@@ -10,11 +13,13 @@ process.env.AI_ENGINE = 'rules';
 let server;
 let base;
 let db;
+let uploadsDir;
 
 before(async () => {
   db = openDb(':memory:');
   seedDemo(db);
-  server = createApp({ db }).listen(0);
+  uploadsDir = mkdtempSync(join(tmpdir(), 'vaani-uploads-'));
+  server = createApp({ db, uploadsDir }).listen(0);
   await new Promise((r) => server.once('listening', r));
   base = `http://127.0.0.1:${server.address().port}/api`;
 });
@@ -22,6 +27,7 @@ before(async () => {
 after(() => {
   server.close();
   db.close();
+  rmSync(uploadsDir, { recursive: true, force: true });
 });
 
 const call = async (method, path, body, headers = {}) => {
@@ -104,4 +110,38 @@ test('demo store is seeded and listed; unknown store 404s', async () => {
   assert.equal(owner.status, 200);
   assert.equal((await call('GET', '/stores/does-not-exist')).status, 404);
   assert.equal((await call('GET', '/nope')).status, 404);
+});
+
+// Smallest valid PNG: 1x1 transparent pixel.
+const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
+
+test('image upload: stores real images, serves them, rejects fakes', async () => {
+  const up = await fetch(`${base}/uploads`, { method: 'POST', headers: { 'content-type': 'image/png' }, body: PNG });
+  assert.equal(up.status, 201);
+  const { url } = await up.json();
+  assert.match(url, /^\/uploads\/[a-f0-9]{24}\.png$/);
+
+  const served = await fetch(base.replace('/api', '') + url);
+  assert.equal(served.status, 200);
+  assert.equal(served.headers.get('content-type'), 'image/png');
+  assert.equal(Buffer.from(await served.arrayBuffer()).length, PNG.length);
+
+  const fake = await fetch(`${base}/uploads`, { method: 'POST', headers: { 'content-type': 'image/png' }, body: Buffer.from('<script>alert(1)</script>') });
+  assert.equal(fake.status, 400);
+
+  const missing = await fetch(base.replace('/api', '') + '/uploads/000000000000000000000000.png');
+  assert.equal(missing.status, 404);
+
+  // Uploaded photos are accepted as a product image and as the shop logo.
+  const gen = await call('POST', '/generate', { transcript: 'Welcome to Photo Shop. Cotton kurti for 899 rupees. WhatsApp 9123456789.' });
+  const store = { ...gen.body.store, logo: url, products: gen.body.store.products.map((p) => ({ ...p, image: url })) };
+  const pub = await call('POST', '/stores', { store });
+  assert.equal(pub.status, 201);
+  assert.equal(pub.body.store.logo, url);
+  assert.equal(pub.body.store.products[0].image, url);
+
+  // Anything else in those fields is dropped rather than stored.
+  const bad = await call('POST', '/stores', { store: { ...store, logo: 'javascript:alert(1)', products: [{ ...store.products[0], image: '/etc/passwd' }] } });
+  assert.equal(bad.body.store.logo, '');
+  assert.notEqual(bad.body.store.products[0].image, '/etc/passwd');
 });

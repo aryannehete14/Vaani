@@ -13,12 +13,15 @@
     "node": ">=22.13"
   },
   "scripts": {
+    "predev": "node scripts/check-ports.mjs",
     "dev": "concurrently -n api,web -c magenta,cyan \"npm run dev -w server\" \"npm run dev -w client\"",
+    "stop": "kill-port 8787 5173",
     "build": "npm run build -w client",
     "start": "npm run start -w server",
     "test": "npm test -w server && npm test -w client"
   },
   "devDependencies": {
-    "concurrently": "^10.0.6"
+    "concurrently": "^10.0.6",
+    "kill-port": "^2.0.1"
   }
 }

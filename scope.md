@@ -1,9 +1,9 @@
 ---
 doc: scope
-status: draft
+status: approved
 ---
 
-# Vaani — Voice-to-Storefront
+# Vaani: Voice-to-Storefront
 
 A shop owner describes their shop out loud (or types it), and Vaani turns that description into a polished, mobile-first storefront with a product catalog, live open/closed hours, a map, and WhatsApp ordering.
 
@@ -60,4 +60,4 @@ A judge opens the app, clicks the mic (or a sample prompt) and says a two-senten
 - **User accounts, auth and passwords.** An unguessable edit key per store is enough for a POC and removes a signup step that loses this persona.
 - **Inventory and stock tracking.** Owners in this segment don't track SKUs digitally, and it isn't needed to prove the kernel.
 - **Multi-page sites and blog/CMS.** One focused page converts better on mobile and keeps generation reliable.
-- **A drag-and-drop theme editor.** This is the complexity Vaani exists to remove. Owners get a brand colour and an AI-chosen theme.
+- **A drag-and-drop theme editor.** This is the complexity Vaani exists to remove. Owners pick one of six ready-made colour themes, and the AI pre-selects one from the shop type.

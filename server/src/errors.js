@@ -24,6 +24,10 @@ export function errorHandler(err, _req, res, _next) {
   if (err?.type === 'entity.too.large') {
     return res.status(413).json({ error: { code: 'TOO_LARGE', message: 'Request body is too large.' } });
   }
+  if (err?.status >= 400 && err.status < 500) {
+    // Errors raised by Express middleware (e.g. a missing uploaded file).
+    return res.status(err.status).json({ error: { code: err.status === 404 ? 'NOT_FOUND' : 'BAD_REQUEST', message: err.expose ? err.message : 'Request failed.' } });
+  }
   console.error(err);
   return res.status(500).json({ error: { code: 'INTERNAL', message: 'Something went wrong on our side. Please try again.' } });
 }

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { StoreSchema } from '../ai/schema.js';
-import { normalizeStore } from '../ai/normalize.js';
+import { normalizeStore, upgradeStore } from '../ai/normalize.js';
 import { tokensMatch } from '../db.js';
 import { rateLimit } from '../rateLimit.js';
 import { HttpError } from '../errors.js';
@@ -33,7 +33,7 @@ export function storesRouter({ db }) {
   const load = (req) => {
     const record = db.getStore(req.params.slug);
     if (!record) throw new HttpError(404, 'NOT_FOUND', 'Store not found.');
-    return record;
+    return { ...record, store: upgradeStore(record.store) };
   };
 
   const requireOwner = (req) => {

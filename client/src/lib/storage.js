@@ -1,4 +1,4 @@
-// localStorage can throw (private mode, blocked storage) — every access is guarded.
+// localStorage can throw (private mode, blocked storage), so every access is guarded.
 
 function read(key, fallback) {
   try {

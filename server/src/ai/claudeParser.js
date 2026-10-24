@@ -14,8 +14,11 @@ Rules:
 - hours: convert to 24h HH:MM. Shops rarely close in the morning, so "9 to 8" means 09:00-20:00. "Closed on Sunday" with no other days means days "Mon-Sat".
 - products: one entry per distinct item that was named. Keep plural/singular as spoken but in Title Case. A unit like "per kg" goes in the description.
 - currency: INR unless another currency is clearly used.
-- tagline and product descriptions: warm, specific, plain English a customer would enjoy; no exaggerated claims.
-- primaryColor: a saturated brand colour that suits the shop (bakery: warm amber/brown, boutique: rose/plum, grocery: green, pharmacy: teal) and is dark enough for white text.`;
+- tagline, about and product descriptions: warm, specific, plain English a customer would enjoy; no exaggerated claims.
+- theme: the storefront colour family that suits the shop.
+- image: the outline icon that best matches each product. Never use emoji anywhere.
+- about: only facts the owner shared about the shop itself (how long it has run, who runs it). Leave it empty otherwise.
+- Do not use em dashes in any text you write.`;
 
 /**
  * Parse a transcript with Claude structured outputs.

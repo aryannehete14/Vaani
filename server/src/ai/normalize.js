@@ -1,34 +1,14 @@
 // Single gate between any parsing engine and the rest of the app: fills defaults,
 // repairs common LLM/regex quirks, collects owner-facing warnings, then validates.
 
-import { StoreSchema } from './schema.js';
-import { CATEGORIES, detectCategory, emojiFor, fallbackDescription, productGroupFor, themeFor, DEFAULT_CATEGORY } from './catalog.js';
+import { PHOTO, StoreSchema } from './schema.js';
+import {
+  CATEGORIES, ICON_KEYS, THEME_IDS, detectCategory, fallbackDescription, iconFor, productGroupFor, themeFor, DEFAULT_CATEGORY,
+} from './catalog.js';
 import { normalizeDays, normalizeTime } from './hours.js';
 import { formatPhone, titleCase } from './ruleParser.js';
 
 const str = (v, max = 200) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
-
-// ---------------------------------------------------------------- colour
-function luminance(hex) {
-  const [r, g, b] = [1, 3, 5].map((i) => {
-    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
-    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
-const contrastWithWhite = (hex) => 1.05 / (luminance(hex) + 0.05);
-
-/** Darken a colour until white text on it meets WCAG AA (4.5:1). */
-export function ensureContrast(hex) {
-  let [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
-  let out = hex.toUpperCase();
-  for (let i = 0; i < 30 && contrastWithWhite(out) < 4.5; i++) {
-    [r, g, b] = [r, g, b].map((c) => Math.round(c * 0.92));
-    out = `#${[r, g, b].map((c) => c.toString(16).padStart(2, '0')).join('')}`.toUpperCase();
-  }
-  return out;
-}
 
 // ---------------------------------------------------------------- contact
 export function toWhatsApp(value) {
@@ -39,8 +19,7 @@ export function toWhatsApp(value) {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const isEmoji = (s) => /\p{Extended_Pictographic}/u.test(s) && [...s].length <= 4;
-const isImageUrl = (s) => /^https:\/\/\S+$/i.test(s);
+const isPhoto = (s) => PHOTO.test(String(s ?? ''));
 
 function slugify(text) {
   return String(text).toLowerCase().normalize('NFKD').replace(/[^\w\s-]/g, '').trim().replace(/[\s_-]+/g, '-').slice(0, 40) || 'item';
@@ -59,20 +38,20 @@ export function normalizeStore(raw = {}) {
   let storeName = str(raw.storeName, 80);
   if (!storeName) {
     storeName = 'My Shop';
-    warnings.push("We didn't catch your shop's name — tap the name to add it.");
+    warnings.push("We didn't catch your shop's name. Tap the name to add it.");
   } else if (storeName === storeName.toLowerCase()) {
     storeName = titleCase(storeName);
   }
 
   const rawCategory = str(raw.category, 40);
   const known = CATEGORIES.find((c) => c.name.toLowerCase() === rawCategory.toLowerCase());
-  const theme = known ?? (rawCategory ? themeFor(rawCategory) : detectCategory(storeName));
-  const category = known?.name ?? (rawCategory ? titleCase(rawCategory) : theme.name);
+  const profile = known ?? (rawCategory ? themeFor(rawCategory) : detectCategory(storeName));
+  const category = known?.name ?? (rawCategory ? titleCase(rawCategory) : profile.name);
+  const theme = THEME_IDS.includes(raw.theme) ? raw.theme : profile.theme ?? DEFAULT_CATEGORY.theme;
 
-  const colorIn = str(raw.primaryColor, 7);
-  const primaryColor = ensureContrast(/^#[0-9a-f]{6}$/i.test(colorIn) ? colorIn : theme.color ?? DEFAULT_CATEGORY.color);
-
-  const tagline = str(raw.tagline, 120) || theme.taglines?.[0] || DEFAULT_CATEGORY.taglines[0];
+  const tagline = str(raw.tagline, 120) || profile.taglines?.[0] || DEFAULT_CATEGORY.taglines[0];
+  const about = str(raw.about, 600);
+  const logo = isPhoto(str(raw.logo, 500)) ? str(raw.logo, 500) : '';
 
   // Contact
   const c = raw.contact ?? {};
@@ -81,15 +60,15 @@ export function normalizeStore(raw = {}) {
   const whatsapp = toWhatsApp(c.whatsapp) || toWhatsApp(c.phone);
   const email = EMAIL_RE.test(str(c.email, 120)) ? str(c.email, 120).toLowerCase() : '';
   const address = str(c.address, 200);
-  if (!phone && !whatsapp) warnings.push('No phone or WhatsApp number heard — add one so customers can order from you.');
-  if (!address) warnings.push('No address heard — add it so customers can find you on the map.');
+  if (!phone && !whatsapp) warnings.push('No phone or WhatsApp number heard. Add one so customers can order from you.');
+  if (!address) warnings.push('No address heard. Add it so customers can find you on the map.');
 
   // Hours
   const h = raw.hours ?? {};
   let open = normalizeTime(h.open);
   let close = normalizeTime(h.close);
   if (!open || !close) {
-    warnings.push("We didn't catch your opening hours — we've set 9:00 AM to 9:00 PM. Edit them if that's wrong.");
+    warnings.push("We didn't catch your opening hours, so we set 9:00 AM to 9:00 PM. Change them if that's wrong.");
     open ??= '09:00';
     close ??= '21:00';
   }
@@ -117,19 +96,21 @@ export function normalizeStore(raw = {}) {
       price: parsePrice(p.price),
       category: group,
       description,
-      image: isEmoji(image) || isImageUrl(image) ? image : emojiFor(name, category),
+      image: ICON_KEYS.includes(image) || isPhoto(image) ? image : iconFor(name, category),
     });
     if (products.length >= 200) break;
   }
-  if (!products.length) warnings.push('No products with prices heard — try "we sell sourdough for ₹150".');
-  else if (products.some((p) => p.price === 0)) warnings.push('Some products have no price yet — tap them to add one.');
+  if (!products.length) warnings.push('No products with prices heard. Try saying "we sell sourdough for 150 rupees".');
+  else if (products.some((p) => p.price === 0)) warnings.push('Some products have no price yet. Tap them to add one.');
 
   const social = raw.social ?? {};
   const store = StoreSchema.parse({
     storeName,
     tagline,
+    about,
+    logo,
     category,
-    primaryColor,
+    theme,
     currency: ['INR', 'USD', 'EUR', 'GBP'].includes(raw.currency) ? raw.currency : 'INR',
     contact: { phone, whatsapp, email, address },
     hours: { open, close, days },
@@ -140,4 +121,12 @@ export function normalizeStore(raw = {}) {
     },
   });
   return { store, warnings };
+}
+
+/** Bring a store saved by an older version (emoji images, no theme) up to the current shape. */
+export function upgradeStore(store) {
+  if (THEME_IDS.includes(store?.theme) && store.products?.every((p) => ICON_KEYS.includes(p.image) || isPhoto(p.image))) {
+    return store;
+  }
+  return normalizeStore(store).store;
 }

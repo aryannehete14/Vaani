@@ -14,7 +14,7 @@ export function rateLimit({ windowMs, max }) {
       return next();
     }
     if (++entry.count > max) {
-      return next(new HttpError(429, 'RATE_LIMITED', 'Too many requests — please wait a minute and try again.'));
+      return next(new HttpError(429, 'RATE_LIMITED', 'Too many requests. Please wait a minute and try again.'));
     }
     next();
   };
