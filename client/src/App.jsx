@@ -8,8 +8,10 @@ import { DashboardPage } from './pages/DashboardPage.jsx';
 import { NotFoundPage } from './pages/NotFoundPage.jsx';
 
 function ScrollToTop() {
-  const { pathname } = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  const { pathname, hash, key } = useLocation();
+  useEffect(() => {
+    if (!hash) window.scrollTo(0, 0);
+  }, [pathname, hash, key]);
   return null;
 }
 

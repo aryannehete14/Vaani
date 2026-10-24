@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Search, X, Phone, Clock, MapPin, PackageOpen, ListChecks, Store } from 'lucide-react';
@@ -35,6 +35,23 @@ function Feature({ icon: Icon, title, children }) {
   );
 }
 
+/** Shop logo and name: back to the top of the shop. Inside the builder preview it only scrolls. */
+function ShopHome({ slug, preview, rootRef, label, children }) {
+  const cls = 'flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left @4xl:flex-none';
+  if (preview || !slug) {
+    return (
+      <button type="button" className={cls} aria-label={label} onClick={() => rootRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+        {children}
+      </button>
+    );
+  }
+  return (
+    <Link to={`/s/${slug}`} className={cls} aria-label={label} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+      {children}
+    </Link>
+  );
+}
+
 /**
  * The Leaf storefront. Renders entirely from a store config, so the same component powers the
  * public page and the live preview in the builder. Container queries (@md:, @3xl:) make it lay
@@ -44,6 +61,7 @@ export function Storefront({ store, slug, preview = false }) {
   const now = useNow();
   const cart = useCart(slug, store.products, { persist: !preview });
   const [query, setQuery] = useState('');
+  const rootRef = useRef(null);
   const [category, setCategory] = useState('All');
 
   const categories = useMemo(() => {
@@ -68,20 +86,22 @@ export function Storefront({ store, slug, preview = false }) {
   const daysLabel = store.hours.days === 'Daily' ? 'Every day' : store.hours.days;
 
   return (
-    <div className="leaf @container relative min-h-full bg-leaf-ground font-leaf text-leaf-deep" style={themeStyle(store.theme)}>
+    <div ref={rootRef} className="leaf @container relative min-h-full bg-leaf-ground font-leaf text-leaf-deep" style={themeStyle(store.theme)}>
       <header className="sticky top-0 z-20 border-b border-leaf-line bg-leaf-ground/90 backdrop-blur-md">
         <div className="mx-auto flex h-[72px] max-w-6xl items-center gap-3 px-4 @3xl:h-[84px] @3xl:gap-6 @3xl:px-8">
-          {store.logo ? (
-            <img src={store.logo} alt="" className="size-11 shrink-0 rounded-full bg-white object-contain ring-1 ring-leaf-line" />
-          ) : (
-            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-leaf-brand font-serif text-[15px] font-bold text-white" aria-hidden>
-              {initials(store.storeName)}
+          <ShopHome slug={slug} preview={preview} rootRef={rootRef} label={`${store.storeName} home`}>
+            {store.logo ? (
+              <img src={store.logo} alt="" className="size-11 shrink-0 rounded-full bg-white object-contain ring-1 ring-leaf-line" />
+            ) : (
+              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-leaf-brand font-serif text-[15px] font-bold text-white" aria-hidden>
+                {initials(store.storeName)}
+              </span>
+            )}
+            <span className="block min-w-0">
+              <span className="block truncate font-serif text-[17px] font-bold leading-tight @3xl:text-[19px]">{store.storeName}</span>
+              <span className="block truncate text-xs text-leaf-muted">{area || store.category}</span>
             </span>
-          )}
-          <div className="min-w-0 flex-1 @4xl:flex-none">
-            <p className="truncate font-serif text-[17px] font-bold leading-tight @3xl:text-[19px]">{store.storeName}</p>
-            <p className="truncate text-xs text-leaf-muted">{area || store.category}</p>
-          </div>
+          </ShopHome>
           <nav className="hidden flex-1 justify-center gap-6 text-[15px] font-semibold @4xl:flex" aria-label="Store sections">
             {bestsellers.length >= 3 && <a href="#bestsellers" className="hover:text-leaf-action">Bestsellers</a>}
             <a href="#products" className="hover:text-leaf-action">All products</a>

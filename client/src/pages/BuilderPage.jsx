@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Search, Clock, MapPin, Lock, Sparkles, Zap, Store } from 'lucide-react';
 import { Logo, ButtonLink, Tag } from '../components/ui/primitives.jsx';
@@ -72,6 +73,17 @@ export function BuilderPage() {
   useEffect(() => {
     document.title = 'Vaani: speak your shop, we paint the sign';
   }, []);
+
+  // A link to "/" while already here (the VAANI logo) creates a new location key: start over.
+  const location = useLocation();
+  const firstKey = useRef(location.key);
+  useEffect(() => {
+    if (location.key === firstKey.current || location.hash) return;
+    setPhase('compose');
+    setDraft(null);
+    setPublished(null);
+    setError(null);
+  }, [location.key, location.hash]);
 
   const visibleWarnings = useMemo(() => (draft ? liveWarnings(warnings, draft) : []), [warnings, draft]);
 
