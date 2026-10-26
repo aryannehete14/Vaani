@@ -241,4 +241,4 @@ Product icons are original outline SVGs drawn for this project (`client/src/lib/
 
 ## License
 
-[MIT](LICENSE) © 2026 Keya Chaudhary and Vaani contributors.
+[MIT](LICENSE) © 2026 Keya Chaudhary, Aryan Nehete and Vaani contributors.
