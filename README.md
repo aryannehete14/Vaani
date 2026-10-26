@@ -6,7 +6,7 @@
 >
 > A few seconds later: a live shop page that customers can browse, search and order from on WhatsApp.
 
-`vaani` (वाणी) means *voice* or *speech* in Hindi and Sanskrit.
+`vaani` (वाणी) means *voice* or *speech* in Hindi and Sanskrit. 
 
 ---
 
